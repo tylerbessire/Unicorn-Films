@@ -4,22 +4,49 @@
 */
 import React, { useState } from 'react';
 import { BotIcon, MicIcon, SendIcon, XMarkIcon } from './icons';
+import { chatWithDirector, DirectorAction } from '../services/geminiService';
 
-const DirectorAssistant: React.FC = () => {
+interface DirectorAssistantProps {
+  onAction?: (action: DirectorAction) => void;
+}
+
+const DirectorAssistant: React.FC<DirectorAssistantProps> = ({ onAction }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{role: 'user'|'ai', text: string}[]>([
-      {role: 'ai', text: "I'm your AI Assistant Director. I can help create characters, write scripts, or chain scenes together. What are we making today?"}
+      {role: 'ai', text: "I'm your AI Assistant Director powered by Gemini 3 Pro. I can generate assets, refine your script, or switch views. What's the plan?"}
   ]);
   const [input, setInput] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
 
-  const handleSend = () => {
+  const handleSend = async () => {
       if(!input.trim()) return;
-      setMessages(prev => [...prev, {role: 'user', text: input}]);
+      
+      const userMsg = input;
+      setMessages(prev => [...prev, {role: 'user', text: userMsg}]);
       setInput('');
-      // Mock Response
-      setTimeout(() => {
-          setMessages(prev => [...prev, {role: 'ai', text: "I'm processing that request. In a real environment, I would now inject those parameters into your scene builder."}]);
-      }, 1000);
+      setIsThinking(true);
+
+      try {
+          const action = await chatWithDirector(messages, userMsg);
+          
+          if (action.type === 'CHAT_RESPONSE') {
+              setMessages(prev => [...prev, {role: 'ai', text: action.payload.text}]);
+          } else {
+              // Perform action
+              if (onAction) onAction(action);
+              
+              let reply = "Done.";
+              if (action.type === 'GENERATE_ASSET') reply = `Generating ${action.payload.prompt}...`;
+              if (action.type === 'UPDATE_PROMPT') reply = "I've updated the main prompt with that scene description.";
+              if (action.type === 'SWITCH_VIEW') reply = `Switching to ${action.payload.view} view.`;
+              
+              setMessages(prev => [...prev, {role: 'ai', text: reply}]);
+          }
+      } catch (error) {
+          setMessages(prev => [...prev, {role: 'ai', text: "Sorry, I lost my train of thought."}]);
+      } finally {
+          setIsThinking(false);
+      }
   };
 
   if (!isOpen) {
@@ -40,7 +67,7 @@ const DirectorAssistant: React.FC = () => {
         <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 p-4 border-b border-gray-700 flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <BotIcon className="w-5 h-5 text-indigo-400" />
-                <span className="font-semibold text-gray-200 text-sm">Director Gemini</span>
+                <span className="font-semibold text-gray-200 text-sm">Director Gemini 3</span>
             </div>
             <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">
                 <XMarkIcon className="w-4 h-4" />
@@ -60,6 +87,15 @@ const DirectorAssistant: React.FC = () => {
                     </div>
                 </div>
             ))}
+            {isThinking && (
+                 <div className="flex justify-start">
+                    <div className="bg-gray-800 text-gray-400 rounded-lg rounded-bl-none p-3 text-xs flex gap-1">
+                        <span className="animate-bounce">.</span>
+                        <span className="animate-bounce delay-100">.</span>
+                        <span className="animate-bounce delay-200">.</span>
+                    </div>
+                 </div>
+            )}
         </div>
 
         {/* Input */}
@@ -76,7 +112,8 @@ const DirectorAssistant: React.FC = () => {
             />
             <button 
                 onClick={handleSend}
-                className="p-2 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white"
+                disabled={isThinking}
+                className="p-2 bg-indigo-600 hover:bg-indigo-500 rounded-full text-white disabled:bg-gray-600"
             >
                 <SendIcon className="w-3 h-3" />
             </button>

@@ -12,7 +12,7 @@ import LoadingIndicator from './components/LoadingIndicator';
 import PromptForm from './components/PromptForm';
 import Storyboard from './components/Storyboard';
 import Timeline from './components/Timeline';
-import {generateVideo} from './services/geminiService';
+import {generateVideo, generateImage, DirectorAction} from './services/geminiService';
 import {
   AppState,
   Asset,
@@ -195,13 +195,45 @@ const App: React.FC = () => {
       setIsPromptBarCollapsed(false);
   };
 
+  // Handler for actions coming from the Director Assistant AI
+  const handleDirectorAction = async (action: DirectorAction) => {
+      switch(action.type) {
+          case 'GENERATE_ASSET':
+              try {
+                  const { prompt } = action.payload;
+                  // Trigger asset generation in background or foreground
+                  // We'll do it "live" for the user to see the result in the bin
+                  const { imageUrl, blob } = await generateImage(prompt);
+                  const newAsset: Asset = {
+                      id: generateId(),
+                      imageUrl,
+                      imageBlob: blob,
+                      prompt,
+                      type: 'character'
+                  };
+                  setAssets(prev => [newAsset, ...prev]);
+              } catch (e) {
+                  console.error("Director failed to generate asset", e);
+              }
+              break;
+          case 'UPDATE_PROMPT':
+              setExternalPrompt(action.payload.prompt);
+              setIsPromptBarCollapsed(false);
+              break;
+          case 'SWITCH_VIEW':
+              if (action.payload.view === 'storyboard') setActiveView('storyboard');
+              if (action.payload.view === 'studio') setActiveView('studio');
+              break;
+      }
+  };
+
   return (
     <div className="h-screen bg-black text-gray-200 flex flex-col font-sans overflow-hidden">
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
 
-      <DirectorAssistant />
+      <DirectorAssistant onAction={handleDirectorAction} />
       
       {/* Header */}
       <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-[#161617] shrink-0 z-40 relative">

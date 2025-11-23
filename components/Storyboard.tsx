@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState, useRef } from 'react';
-import { Asset, Scene } from '../types';
-import { ArrowRightIcon, PlusIcon, TrashIcon, XMarkIcon } from './icons';
+import { Asset } from '../types';
+import { ArrowRightIcon, PlusIcon, XMarkIcon } from './icons';
+import { generateStoryboardDescription } from '../services/geminiService';
 
 interface StoryboardProps {
     assets: Asset[];
@@ -22,6 +23,7 @@ interface BoardItem {
 const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) => {
     const [items, setItems] = useState<BoardItem[]>([]);
     const [draggingId, setDraggingId] = useState<string | null>(null);
+    const [isExecuting, setIsExecuting] = useState(false);
     const boardRef = useRef<HTMLDivElement>(null);
 
     const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -67,16 +69,29 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
         setItems(prev => prev.filter(item => item.id !== id));
     };
 
-    const handleExecute = () => {
+    const handleExecute = async () => {
         if(items.length === 0) return;
-        // Mock injection logic - in real app would parse the board
-        const prompt = items.map(i => {
-             const asset = assets.find(a => a.id === i.assetId);
-             return `${asset?.prompt || 'Object'} (${i.note})`;
-        }).join(' next to ');
-        
-        onInjectToTimeline({ prompt });
-        alert("Storyboard executed and injected into Director's Prompt!");
+        setIsExecuting(true);
+        try {
+            // Prepare payload for AI
+            const boardData = items.map(i => {
+                const asset = assets.find(a => a.id === i.assetId);
+                return {
+                    prompt: asset?.prompt || 'Object',
+                    note: i.note,
+                    x: i.x,
+                    y: i.y
+                };
+            });
+
+            const prompt = await generateStoryboardDescription(boardData);
+            onInjectToTimeline({ prompt });
+        } catch (error) {
+            console.error("Storyboard execution failed", error);
+            alert("Failed to generate scene description.");
+        } finally {
+            setIsExecuting(false);
+        }
     };
 
     return (
@@ -89,16 +104,16 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
                 </div>
                 
                 <div className="absolute top-4 left-4 z-10 bg-black/50 p-2 rounded-lg border border-gray-700/50 backdrop-blur-md">
-                    <h2 className="text-gray-400 font-mono text-xs uppercase tracking-widest">Storybuilder Board V1.0</h2>
+                    <h2 className="text-gray-400 font-mono text-xs uppercase tracking-widest">Storybuilder Board (Gemini 3 Powered)</h2>
                 </div>
 
                 <div className="absolute top-4 right-4 z-10">
                      <button 
                         onClick={handleExecute}
-                        disabled={items.length === 0}
+                        disabled={items.length === 0 || isExecuting}
                         className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-mono flex items-center gap-2 shadow-lg"
                     >
-                        EXECUTE SCENE <ArrowRightIcon className="w-4 h-4" />
+                        {isExecuting ? "INTERPRETING..." : "EXECUTE SCENE"} <ArrowRightIcon className="w-4 h-4" />
                     </button>
                 </div>
 

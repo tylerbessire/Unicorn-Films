@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState } from 'react';
-import { generateImage, generateScript } from '../services/geminiService';
+import { generateImage, generateScript, generateScoreMetadata, ScoreMetadata, generateTransitionPrompts } from '../services/geminiService';
 import { Asset, Scene } from '../types';
 import { ArrowRightIcon, FilmIcon, GridIcon, MusicIcon, PenToolIcon, PlusIcon, ScissorsIcon, SparklesIcon, XMarkIcon } from './icons';
 
@@ -34,9 +34,17 @@ const BinSystem: React.FC<BinSystemProps> = ({
   const [activeTab, setActiveTab] = useState<Tab>('snapshots');
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Script State
   const [scriptInput, setScriptInput] = useState('');
   const [scriptOutput, setScriptOutput] = useState('');
+  
+  // Score State
   const [musicPrompt, setMusicPrompt] = useState('');
+  const [scores, setScores] = useState<ScoreMetadata[]>([]);
+  
+  // B-Roll State
+  const [bRollIdeas, setBRollIdeas] = useState<string[]>([]);
 
   const handleGenerateAsset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,13 +83,32 @@ const BinSystem: React.FC<BinSystemProps> = ({
   };
 
   const handleGenerateScore = async () => {
-      // Mock Lyria generation for demo
+      if(!musicPrompt.trim()) return;
       setIsGenerating(true);
-      await new Promise(r => setTimeout(r, 2000));
-      setIsGenerating(false);
-      setMusicPrompt('');
-      alert("Musical Score successfully generated (Mock).");
+      try {
+          const score = await generateScoreMetadata(musicPrompt);
+          setScores(prev => [score, ...prev]);
+          setMusicPrompt('');
+      } catch (e) {
+          console.error("Score gen failed", e);
+      } finally {
+          setIsGenerating(false);
+      }
   }
+
+  const handleGenerateBRoll = async () => {
+      if(scenes.length === 0) return;
+      setIsGenerating(true);
+      try {
+          const lastScene = scenes[scenes.length - 1];
+          const ideas = await generateTransitionPrompts(lastScene.prompt);
+          setBRollIdeas(ideas);
+      } catch(e) {
+          console.error("B-roll failed", e);
+      } finally {
+          setIsGenerating(false);
+      }
+  };
 
   const TabButton: React.FC<{ id: Tab; icon: React.ReactNode; label?: string }> = ({ id, icon, label }) => (
     <button
@@ -114,7 +141,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
           <div className="space-y-6 animate-fade-in">
             <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hidden md:block">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                Generate Asset
+                Generate Asset (Pro)
               </h3>
               <form onSubmit={handleGenerateAsset}>
                 <textarea
@@ -183,7 +210,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
           <div className="space-y-6 animate-fade-in">
              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hidden md:block">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                AI Script Assistant
+                Gemini 3 Script Writer
               </h3>
               <textarea
                 value={scriptInput}
@@ -236,7 +263,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
               <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
                 <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                    <MusicIcon className="w-3 h-3 text-purple-400" />
-                   Lyria Realtime Score
+                   Lyria Score (Gen 3)
                 </h3>
                 <textarea
                   value={musicPrompt}
@@ -254,23 +281,36 @@ const BinSystem: React.FC<BinSystemProps> = ({
                   ) : (
                     <>
                       <MusicIcon className="w-4 h-4" />
-                      Generate Score
+                      Compose Metadata
                     </>
                   )}
                 </button>
               </div>
 
               <div className="space-y-2">
-                  <div className="p-3 bg-[#2c2c2e] rounded-lg border border-gray-700 flex items-center gap-3">
-                      <div className="w-8 h-8 bg-purple-900/50 rounded flex items-center justify-center">
-                          <MusicIcon className="w-4 h-4 text-purple-400" />
+                  {scores.length === 0 && (
+                      <div className="text-center text-gray-600 text-xs py-4">
+                          No scores generated yet.
                       </div>
-                      <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-gray-300 truncate">Suspenseful Orchestral Swell</div>
-                          <div className="text-[10px] text-gray-500">00:32 • 120 BPM</div>
+                  )}
+                  {scores.map((score, i) => (
+                      <div key={i} className="p-3 bg-[#2c2c2e] rounded-lg border border-gray-700 flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-900/50 rounded flex items-center justify-center shrink-0">
+                              <MusicIcon className="w-4 h-4 text-purple-400" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium text-gray-300 truncate">{score.title}</div>
+                              <div className="text-[10px] text-gray-500">{score.bpm} BPM • {score.instruments?.slice(0, 2).join(', ')}</div>
+                          </div>
+                          <button 
+                            onClick={() => alert(`Copied Score: ${score.description}`)}
+                            className="text-gray-400 hover:text-white"
+                            title="Copy Description"
+                          >
+                              <PlusIcon className="w-4 h-4"/>
+                          </button>
                       </div>
-                      <button className="text-gray-400 hover:text-white"><PlusIcon className="w-4 h-4"/></button>
-                  </div>
+                  ))}
               </div>
            </div>
         )}
@@ -282,7 +322,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
               <h3 className="text-gray-400 text-sm font-medium">Smart B-Roll</h3>
               {scenes.length > 0 ? (
                  <p className="text-xs text-indigo-400 mt-2">
-                    Analyzing {scenes.length} scene{scenes.length !== 1 ? 's' : ''} for transitions...
+                    Analyze last scene to generate bridges
                  </p>
               ) : (
                  <p className="text-xs text-gray-600 mt-2">
@@ -291,13 +331,32 @@ const BinSystem: React.FC<BinSystemProps> = ({
               )}
             </div>
             <button 
-                disabled={scenes.length === 0}
-                onClick={() => alert("Transition generation coming soon!")}
+                disabled={scenes.length === 0 || isGenerating}
+                onClick={handleGenerateBRoll}
                 className="w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
             >
-               <SparklesIcon className="w-3 h-3" />
-               Auto-Fill Transitions
+               {isGenerating ? <div className="animate-spin w-3 h-3 border-2 border-white rounded-full border-t-transparent"/> : <SparklesIcon className="w-3 h-3" />}
+               Generate Transitions
             </button>
+
+            {bRollIdeas.length > 0 && (
+                <div className="space-y-2 mt-4">
+                    {bRollIdeas.map((idea, i) => (
+                        <div key={i} className="bg-[#2c2c2e] p-3 rounded-lg border border-gray-700 flex gap-2">
+                            <span className="text-xs text-gray-500 font-mono mt-0.5">{i+1}</span>
+                            <div className="flex-1">
+                                <p className="text-xs text-gray-300">{idea}</p>
+                                <button 
+                                    onClick={() => onUseScript(idea)}
+                                    className="text-[10px] text-indigo-400 hover:text-indigo-300 mt-2 font-medium"
+                                >
+                                    USE THIS
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
           </div>
         )}
 
@@ -305,19 +364,11 @@ const BinSystem: React.FC<BinSystemProps> = ({
             <div className="animate-fade-in space-y-4">
                  <div className="flex items-center justify-between px-1">
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Drafts & Alts</h3>
-                    <span className="text-[10px] text-gray-600">2 Items</span>
+                    <span className="text-[10px] text-gray-600">0 Items</span>
                  </div>
-                
-                <div className="space-y-3">
-                    <div className="group relative aspect-video bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xs text-gray-600 font-mono">DELETED SCENE 1</span>
-                        </div>
-                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                             <button className="p-1.5 bg-indigo-600 rounded-full text-white" title="Restore"><PlusIcon className="w-3 h-3"/></button>
-                         </div>
-                    </div>
-                </div>
+                 <div className="text-center text-gray-600 text-xs py-10">
+                    No deleted scenes.
+                 </div>
             </div>
         )}
       </div>
