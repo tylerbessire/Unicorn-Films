@@ -7,18 +7,25 @@ import {
   ArrowDown,
   ArrowRight,
   Baseline,
+  Bot,
   ChevronDown,
+  ChevronUp,
   Film,
   Image,
   KeyRound,
   Layers,
   LayoutGrid,
   Maximize2,
+  Mic,
+  Minimize2,
+  Music,
   PenTool,
   Play,
   Plus,
+  Presentation,
   RefreshCw,
   Scissors,
+  Send,
   SlidersHorizontal,
   Sparkles,
   Trash2,
@@ -49,6 +56,10 @@ export const PlusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 export const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
   props,
 ) => <ChevronDown {...defaultProps} {...props} />;
+
+export const ChevronUpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
+  props,
+) => <ChevronUp {...defaultProps} {...props} />;
 
 export const SlidersHorizontalIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
   props,
@@ -108,6 +119,30 @@ export const PlayIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 export const MaximizeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <Maximize2 {...defaultProps} {...props} />
+);
+
+export const MinimizeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Minimize2 {...defaultProps} {...props} />
+);
+
+export const MusicIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Music {...defaultProps} {...props} />
+);
+
+export const PresentationIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Presentation {...defaultProps} {...props} />
+);
+
+export const BotIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Bot {...defaultProps} {...props} />
+);
+
+export const MicIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Mic {...defaultProps} {...props} />
+);
+
+export const SendIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <Send {...defaultProps} {...props} />
 );
 
 // This icon had a different stroke width in the original file, so we preserve it.

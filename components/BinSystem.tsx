@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { generateImage, generateScript } from '../services/geminiService';
 import { Asset, Scene } from '../types';
-import { ArrowRightIcon, FilmIcon, GridIcon, PenToolIcon, PlusIcon, ScissorsIcon, SparklesIcon, XMarkIcon } from './icons';
+import { ArrowRightIcon, FilmIcon, GridIcon, MusicIcon, PenToolIcon, PlusIcon, ScissorsIcon, SparklesIcon, XMarkIcon } from './icons';
 
 interface BinSystemProps {
   assets: Asset[];
@@ -17,7 +17,10 @@ interface BinSystemProps {
   onUseScript: (script: string) => void;
 }
 
-type Tab = 'snapshots' | 'screenwriter' | 'b-roll' | 'outtakes';
+type Tab = 'snapshots' | 'screenwriter' | 'score' | 'b-roll' | 'outtakes';
+
+// Robust ID generator
+const generateId = () => globalThis.crypto?.randomUUID() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2));
 
 const BinSystem: React.FC<BinSystemProps> = ({ 
   assets, 
@@ -33,6 +36,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [scriptInput, setScriptInput] = useState('');
   const [scriptOutput, setScriptOutput] = useState('');
+  const [musicPrompt, setMusicPrompt] = useState('');
 
   const handleGenerateAsset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +46,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
     try {
       const { imageUrl, blob } = await generateImage(prompt);
       const newAsset: Asset = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         imageUrl,
         imageBlob: blob,
         prompt,
@@ -70,10 +74,19 @@ const BinSystem: React.FC<BinSystemProps> = ({
     }
   };
 
+  const handleGenerateScore = async () => {
+      // Mock Lyria generation for demo
+      setIsGenerating(true);
+      await new Promise(r => setTimeout(r, 2000));
+      setIsGenerating(false);
+      setMusicPrompt('');
+      alert("Musical Score successfully generated (Mock).");
+  }
+
   const TabButton: React.FC<{ id: Tab; icon: React.ReactNode; label?: string }> = ({ id, icon, label }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex-1 py-3 px-2 text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors relative ${
+      className={`flex-1 py-3 px-1 md:px-2 text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors relative ${
         activeTab === id ? 'text-indigo-400' : 'text-gray-500 hover:text-gray-300'
       }`}
       title={label || id}
@@ -86,13 +99,14 @@ const BinSystem: React.FC<BinSystemProps> = ({
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#1c1c1e] border-r border-gray-800 w-16 md:w-80 shrink-0 transition-all duration-300">
+    <div className="flex flex-col h-full bg-[#1c1c1e] border-r border-gray-800 w-16 md:w-80 shrink-0 transition-all duration-300 z-30">
       {/* Tabs Navigation */}
-      <div className="flex md:grid md:grid-cols-4 border-b border-gray-800 bg-[#121212]">
-        <TabButton id="snapshots" icon={<GridIcon className="w-5 h-5" />} label="Snapshots" />
-        <TabButton id="screenwriter" icon={<PenToolIcon className="w-5 h-5" />} label="Screenwriter" />
+      <div className="flex md:grid md:grid-cols-5 border-b border-gray-800 bg-[#121212] overflow-x-auto hide-scrollbar">
+        <TabButton id="snapshots" icon={<GridIcon className="w-5 h-5" />} label="Assets" />
+        <TabButton id="screenwriter" icon={<PenToolIcon className="w-5 h-5" />} label="Script" />
+        <TabButton id="score" icon={<MusicIcon className="w-5 h-5" />} label="Score" />
         <TabButton id="b-roll" icon={<FilmIcon className="w-5 h-5" />} label="B-Roll" />
-        <TabButton id="outtakes" icon={<ScissorsIcon className="w-5 h-5" />} label="Outtakes" />
+        <TabButton id="outtakes" icon={<ScissorsIcon className="w-5 h-5" />} label="Cuts" />
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-700">
@@ -217,6 +231,50 @@ const BinSystem: React.FC<BinSystemProps> = ({
           </div>
         )}
 
+        {activeTab === 'score' && (
+           <div className="space-y-6 animate-fade-in">
+              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                   <MusicIcon className="w-3 h-3 text-purple-400" />
+                   Lyria Realtime Score
+                </h3>
+                <textarea
+                  value={musicPrompt}
+                  onChange={(e) => setMusicPrompt(e.target.value)}
+                  placeholder="Describe mood, instruments, tempo..."
+                  className="w-full bg-black/50 border border-gray-600 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none h-24 mb-3"
+                />
+                 <button
+                  onClick={handleGenerateScore}
+                  disabled={isGenerating || !musicPrompt.trim()}
+                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  {isGenerating ? (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <MusicIcon className="w-4 h-4" />
+                      Generate Score
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                  <div className="p-3 bg-[#2c2c2e] rounded-lg border border-gray-700 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-purple-900/50 rounded flex items-center justify-center">
+                          <MusicIcon className="w-4 h-4 text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-gray-300 truncate">Suspenseful Orchestral Swell</div>
+                          <div className="text-[10px] text-gray-500">00:32 • 120 BPM</div>
+                      </div>
+                      <button className="text-gray-400 hover:text-white"><PlusIcon className="w-4 h-4"/></button>
+                  </div>
+              </div>
+           </div>
+        )}
+
         {activeTab === 'b-roll' && (
           <div className="animate-fade-in space-y-4">
             <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-700 border-dashed text-center">
@@ -240,15 +298,6 @@ const BinSystem: React.FC<BinSystemProps> = ({
                <SparklesIcon className="w-3 h-3" />
                Auto-Fill Transitions
             </button>
-            
-            {scenes.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-4 opacity-60 pointer-events-none grayscale">
-                    <div className="aspect-video bg-gray-800 rounded flex items-center justify-center text-[10px] text-gray-500">Wide Shot</div>
-                    <div className="aspect-video bg-gray-800 rounded flex items-center justify-center text-[10px] text-gray-500">Detail</div>
-                    <div className="aspect-video bg-gray-800 rounded flex items-center justify-center text-[10px] text-gray-500">Zoom</div>
-                    <div className="aspect-video bg-gray-800 rounded flex items-center justify-center text-[10px] text-gray-500">Pan</div>
-                </div>
-            )}
           </div>
         )}
 
@@ -263,14 +312,6 @@ const BinSystem: React.FC<BinSystemProps> = ({
                     <div className="group relative aspect-video bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden">
                         <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-xs text-gray-600 font-mono">DELETED SCENE 1</span>
-                        </div>
-                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                             <button className="p-1.5 bg-indigo-600 rounded-full text-white" title="Restore"><PlusIcon className="w-3 h-3"/></button>
-                         </div>
-                    </div>
-                     <div className="group relative aspect-video bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden">
-                         <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xs text-gray-600 font-mono">ALT TAKE 3</span>
                         </div>
                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                              <button className="p-1.5 bg-indigo-600 rounded-full text-white" title="Restore"><PlusIcon className="w-3 h-3"/></button>

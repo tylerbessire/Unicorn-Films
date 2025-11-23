@@ -6,13 +6,17 @@ import type {Video} from '@google/genai';
 import React, {useCallback, useEffect, useState} from 'react';
 import ApiKeyDialog from './components/ApiKeyDialog';
 import BinSystem from './components/BinSystem';
+import DirectorAssistant from './components/DirectorAssistant';
+import { ChevronDownIcon, ChevronUpIcon, PresentationIcon, TvIcon } from './components/icons';
 import LoadingIndicator from './components/LoadingIndicator';
 import PromptForm from './components/PromptForm';
+import Storyboard from './components/Storyboard';
 import Timeline from './components/Timeline';
 import {generateVideo} from './services/geminiService';
 import {
   AppState,
   Asset,
+  AspectRatio,
   GenerateVideoParams,
   GenerationMode,
   ImageFile,
@@ -22,10 +26,18 @@ import {
   VideoFile,
 } from './types';
 
+// Robust ID generator
+const generateId = () => globalThis.crypto?.randomUUID() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2));
+
 const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
   
+  // Layout State
+  const [activeView, setActiveView] = useState<'studio' | 'storyboard'>('studio');
+  const [isTimelineCollapsed, setIsTimelineCollapsed] = useState(false);
+  const [isPromptBarCollapsed, setIsPromptBarCollapsed] = useState(false);
+
   // Studio State
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -105,12 +117,13 @@ const App: React.FC = () => {
     setAppState(AppState.LOADING);
     setExternalPrompt(null); // Clear external prompt after usage
     setInitialFormValues(null); // Clear carry-over configs
+    setIsPromptBarCollapsed(true); // Auto collapse to show result
 
     try {
       const {objectUrl, blob, video} = await generateVideo(params);
       
       const newScene: Scene = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         videoUrl: objectUrl,
         videoBlob: blob,
         videoObject: video,
@@ -146,12 +159,13 @@ const App: React.FC = () => {
          setInitialFormValues({
             prompt: '',
             model: VeoModel.VEO, // Extension requires standard veo
-            aspectRatio: Resolution.P720 as any, // Ignore ratio for extend
+            aspectRatio: AspectRatio.LANDSCAPE, // Use a valid default aspect ratio
             resolution: Resolution.P720,
             mode: GenerationMode.EXTEND_VIDEO,
             inputVideo: videoFile,
             inputVideoObject: scene.videoObject
          });
+         setIsPromptBarCollapsed(false); // Open prompt bar to show extended settings
        };
        reader.readAsDataURL(scene.videoBlob);
 
@@ -175,17 +189,42 @@ const App: React.FC = () => {
     );
   };
 
+  const handleStoryboardInject = (data: any) => {
+      setExternalPrompt(data.prompt);
+      setActiveView('studio');
+      setIsPromptBarCollapsed(false);
+  };
+
   return (
     <div className="h-screen bg-black text-gray-200 flex flex-col font-sans overflow-hidden">
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
+
+      <DirectorAssistant />
       
       {/* Header */}
-      <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-[#161617] shrink-0 z-20">
-        <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+      <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-[#161617] shrink-0 z-40 relative">
+        <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mr-8">
           Veo Studio
         </h1>
+        
+        {/* View Switcher */}
+        <div className="flex bg-[#0f0f10] rounded-lg p-1 border border-gray-800">
+             <button 
+                onClick={() => setActiveView('studio')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'studio' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+             >
+                <TvIcon className="w-3 h-3" /> Studio
+             </button>
+             <button 
+                onClick={() => setActiveView('storyboard')}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'storyboard' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+             >
+                <PresentationIcon className="w-3 h-3" /> Storyboard
+             </button>
+        </div>
+
         <div className="ml-auto text-xs text-gray-500 hidden md:block">
            AI Film Production Platform
         </div>
@@ -202,63 +241,93 @@ const App: React.FC = () => {
            onRemoveAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))}
            selectedAssetIds={selectedAssetIds}
            onSelectAsset={toggleAssetSelection}
-           onUseScript={(script) => setExternalPrompt(script)}
+           onUseScript={(script) => {
+               setExternalPrompt(script);
+               setIsPromptBarCollapsed(false);
+           }}
         />
 
         {/* Center Stage */}
         <div className="flex-1 flex flex-col bg-[#0a0a0a] relative overflow-hidden">
           
-          {/* Viewport / Player */}
-          <div className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden relative">
-            {appState === AppState.LOADING ? (
-                <LoadingIndicator />
-            ) : selectedScene ? (
-                <div className="w-full h-full flex flex-col items-center justify-center animate-fade-in">
-                    <video 
-                        src={selectedScene.videoUrl} 
-                        controls 
-                        autoPlay 
-                        className="max-w-full max-h-full shadow-2xl rounded-lg"
-                    />
-                    <div className="mt-4 text-sm text-gray-500 font-mono max-w-2xl text-center truncate px-4">
-                        {selectedScene.prompt}
+          {activeView === 'studio' ? (
+              <>
+                {/* Viewport / Player */}
+                <div className={`flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden relative transition-all duration-300 ${isPromptBarCollapsed ? 'pb-24' : 'pb-4'}`}>
+                    {appState === AppState.LOADING ? (
+                        <LoadingIndicator />
+                    ) : selectedScene ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center animate-fade-in">
+                            <video 
+                                src={selectedScene.videoUrl} 
+                                controls 
+                                autoPlay 
+                                className="max-w-full max-h-full shadow-2xl rounded-lg"
+                            />
+                            <div className="mt-4 text-sm text-gray-500 font-mono max-w-2xl text-center truncate px-4">
+                                {selectedScene.prompt}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center text-gray-600">
+                            <h2 className="text-2xl font-light mb-2">Ready to Direct</h2>
+                            <p>Select assets from the bin or type a prompt below.</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Floating Prompt Bar Container */}
+                <div className={`w-full max-w-4xl mx-auto px-6 relative z-10 transition-all duration-300 ${isPromptBarCollapsed ? 'translate-y-full absolute bottom-0 left-0 right-0' : 'pb-6'}`}>
+                    {/* Handle for collapsing */}
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+                        <button 
+                            onClick={() => setIsPromptBarCollapsed(!isPromptBarCollapsed)}
+                            className="bg-[#1f1f1f] border border-gray-700 border-b-0 rounded-t-lg px-4 py-1 flex items-center gap-2 text-xs text-gray-400 hover:text-white"
+                        >
+                            {isPromptBarCollapsed ? (
+                                <>Show Prompt Bar <ChevronUpIcon className="w-3 h-3" /></>
+                            ) : (
+                                <>Hide <ChevronDownIcon className="w-3 h-3" /></>
+                            )}
+                        </button>
                     </div>
-                </div>
-            ) : (
-                <div className="text-center text-gray-600">
-                    <h2 className="text-2xl font-light mb-2">Ready to Direct</h2>
-                    <p>Select assets from the bin or type a prompt below.</p>
-                </div>
-            )}
-          </div>
 
-          {/* Floating Prompt Bar */}
-          <div className="w-full max-w-4xl mx-auto px-6 pb-6 relative z-10">
-             <PromptForm 
-                onGenerate={handleGenerate} 
-                initialValues={initialFormValues}
-                externalPrompt={externalPrompt}
-                externalReferences={preparedExternalAssets}
-             />
-          </div>
+                    {!isPromptBarCollapsed && (
+                        <PromptForm 
+                            onGenerate={handleGenerate} 
+                            initialValues={initialFormValues}
+                            externalPrompt={externalPrompt}
+                            externalReferences={preparedExternalAssets}
+                        />
+                    )}
+                </div>
 
-          {/* Timeline */}
-          <Timeline 
-             scenes={scenes}
-             selectedSceneId={selectedSceneId}
-             onSelectScene={setSelectedSceneId}
-             onDeleteScene={(id) => {
-                setScenes(prev => prev.filter(s => s.id !== id));
-                if (selectedSceneId === id) setSelectedSceneId(null);
-             }}
-             onExtendScene={handleExtend}
-             onAddScene={() => {
-                setSelectedSceneId(null);
-                setInitialFormValues(null);
-                setExternalPrompt(null);
-                setSelectedAssetIds([]);
-             }}
-          />
+                {/* Timeline */}
+                <Timeline 
+                    scenes={scenes}
+                    selectedSceneId={selectedSceneId}
+                    onSelectScene={setSelectedSceneId}
+                    onDeleteScene={(id) => {
+                        setScenes(prev => prev.filter(s => s.id !== id));
+                        if (selectedSceneId === id) setSelectedSceneId(null);
+                    }}
+                    onExtendScene={handleExtend}
+                    onAddScene={() => {
+                        setSelectedSceneId(null);
+                        setInitialFormValues(null);
+                        setExternalPrompt(null);
+                        setSelectedAssetIds([]);
+                    }}
+                    isCollapsed={isTimelineCollapsed}
+                    onToggleCollapse={() => setIsTimelineCollapsed(!isTimelineCollapsed)}
+                />
+              </>
+          ) : (
+              <Storyboard 
+                 assets={assets}
+                 onInjectToTimeline={handleStoryboardInject}
+              />
+          )}
         </div>
       </div>
     </div>
