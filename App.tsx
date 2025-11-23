@@ -228,7 +228,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-black text-gray-200 flex flex-col font-sans overflow-hidden">
+    <div className="h-screen bg-[#151530] text-gray-200 flex flex-col font-sans overflow-hidden">
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
@@ -236,28 +236,29 @@ const App: React.FC = () => {
       <DirectorAssistant onAction={handleDirectorAction} />
       
       {/* Header */}
-      <header className="h-16 border-b border-gray-800 flex items-center px-6 bg-[#161617] shrink-0 z-40 relative">
-        <h1 className="text-xl font-bold tracking-wide bg-gradient-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mr-8">
-          Veo Studio
+      <header className="h-16 border-b border-[#3b3b64] flex items-center px-6 bg-[#272757] shrink-0 z-40 relative">
+        <h1 className="text-xl font-bold tracking-wide text-white mr-8 flex items-center gap-2">
+          <span className="w-4 h-4 rounded-full bg-[#E35336]"></span>
+          Desert Mirage
         </h1>
         
         {/* View Switcher */}
-        <div className="flex bg-[#0f0f10] rounded-lg p-1 border border-gray-800">
+        <div className="flex bg-[#1b1b3a] rounded-lg p-1 border border-[#3b3b64]">
              <button 
                 onClick={() => setActiveView('studio')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'studio' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'studio' ? 'bg-[#E35336] text-white' : 'text-gray-400 hover:text-white'}`}
              >
                 <TvIcon className="w-3 h-3" /> Studio
              </button>
              <button 
                 onClick={() => setActiveView('storyboard')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'storyboard' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'storyboard' ? 'bg-[#E35336] text-white' : 'text-gray-400 hover:text-white'}`}
              >
                 <PresentationIcon className="w-3 h-3" /> Storyboard
              </button>
         </div>
 
-        <div className="ml-auto text-xs text-gray-500 hidden md:block">
+        <div className="ml-auto text-xs text-[#C2B280] hidden md:block opacity-80">
            AI Film Production Platform
         </div>
       </header>
@@ -280,7 +281,7 @@ const App: React.FC = () => {
         />
 
         {/* Center Stage */}
-        <div className="flex-1 flex flex-col bg-[#0a0a0a] relative overflow-hidden">
+        <div className="flex-1 flex flex-col bg-[#151530] relative overflow-hidden">
           
           {activeView === 'studio' ? (
               <>
@@ -294,15 +295,15 @@ const App: React.FC = () => {
                                 src={selectedScene.videoUrl} 
                                 controls 
                                 autoPlay 
-                                className="max-w-full max-h-full shadow-2xl rounded-lg"
+                                className="max-w-full max-h-full shadow-2xl rounded-lg border border-[#3b3b64]"
                             />
-                            <div className="mt-4 text-sm text-gray-500 font-mono max-w-2xl text-center truncate px-4">
+                            <div className="mt-4 text-sm text-[#C2B280] font-mono max-w-2xl text-center truncate px-4">
                                 {selectedScene.prompt}
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center text-gray-600">
-                            <h2 className="text-2xl font-light mb-2">Ready to Direct</h2>
+                        <div className="text-center text-gray-500">
+                            <h2 className="text-2xl font-light mb-2 text-[#C2B280]">Ready to Direct</h2>
                             <p>Select assets from the bin or type a prompt below.</p>
                         </div>
                     )}
@@ -314,7 +315,7 @@ const App: React.FC = () => {
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2">
                         <button 
                             onClick={() => setIsPromptBarCollapsed(!isPromptBarCollapsed)}
-                            className="bg-[#1f1f1f] border border-gray-700 border-b-0 rounded-t-lg px-4 py-1 flex items-center gap-2 text-xs text-gray-400 hover:text-white"
+                            className="bg-[#272757] border border-[#3b3b64] border-b-0 rounded-t-lg px-4 py-1 flex items-center gap-2 text-xs text-[#C2B280] hover:text-white"
                         >
                             {isPromptBarCollapsed ? (
                                 <>Show Prompt Bar <ChevronUpIcon className="w-3 h-3" /></>

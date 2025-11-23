@@ -75,7 +75,7 @@ const CustomSelect: React.FC<{
   <div>
     <label
       className={`text-xs block mb-1.5 font-medium ${
-        disabled ? 'text-gray-500' : 'text-gray-400'
+        disabled ? 'text-gray-500' : 'text-[#C2B280]'
       }`}>
       {label}
     </label>
@@ -87,7 +87,7 @@ const CustomSelect: React.FC<{
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className="w-full bg-[#1f1f1f] border border-gray-600 rounded-lg pl-10 pr-8 py-2.5 appearance-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-700/50 disabled:border-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed">
+        className="w-full bg-[#1b1b3a] border border-[#3b3b64] rounded-lg pl-10 pr-8 py-2.5 appearance-none focus:ring-1 focus:ring-[#E35336] focus:border-[#E35336] disabled:bg-[#151530] disabled:border-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed text-gray-200">
         {children}
       </select>
       <ChevronDownIcon
@@ -145,7 +145,7 @@ const ImageUpload: React.FC<{
     <button
       type="button"
       onClick={() => inputRef.current?.click()}
-      className="w-28 h-20 bg-gray-700/50 hover:bg-gray-700 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-white transition-colors">
+      className="w-28 h-20 bg-[#1b1b3a]/50 hover:bg-[#272757] border-2 border-dashed border-[#3b3b64] rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-white transition-colors">
       <PlusIcon className="w-6 h-6" />
       <span className="text-xs mt-1">{label}</span>
       <input
@@ -202,7 +202,7 @@ const VideoUpload: React.FC<{
     <button
       type="button"
       onClick={() => inputRef.current?.click()}
-      className="w-48 h-28 bg-gray-700/50 hover:bg-gray-700 border-2 border-dashed border-gray-600 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-white transition-colors text-center">
+      className="w-48 h-28 bg-[#1b1b3a]/50 hover:bg-[#272757] border-2 border-dashed border-[#3b3b64] rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-white transition-colors text-center">
       <PlusIcon className="w-6 h-6" />
       <span className="text-xs mt-1 px-2">{label}</span>
       <input
@@ -397,7 +397,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
   const renderMediaUploads = () => {
     if (generationMode === GenerationMode.FRAMES_TO_VIDEO) {
       return (
-        <div className="mb-3 p-4 bg-[#2c2c2e] rounded-xl border border-gray-700 flex flex-col items-center justify-center gap-4">
+        <div className="mb-3 p-4 bg-[#272757] rounded-xl border border-[#3b3b64] flex flex-col items-center justify-center gap-4">
           <div className="flex items-center justify-center gap-4">
             <ImageUpload
               label="Start Frame"
@@ -424,7 +424,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
                 type="checkbox"
                 checked={isLooping}
                 onChange={(e) => setIsLooping(e.target.checked)}
-                className="w-4 h-4 text-indigo-600 bg-gray-700 border-gray-600 rounded focus:ring-indigo-500 focus:ring-offset-gray-800 cursor-pointer"
+                className="w-4 h-4 text-[#E35336] bg-[#1b1b3a] border-[#3b3b64] rounded focus:ring-[#E35336] cursor-pointer"
               />
               <label
                 htmlFor="loop-video-checkbox"
@@ -438,7 +438,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     }
     if (generationMode === GenerationMode.REFERENCES_TO_VIDEO) {
       return (
-        <div className="mb-3 p-4 bg-[#2c2c2e] rounded-xl border border-gray-700 flex flex-wrap items-center justify-center gap-2">
+        <div className="mb-3 p-4 bg-[#272757] rounded-xl border border-[#3b3b64] flex flex-wrap items-center justify-center gap-2">
           {referenceImages.map((img, index) => (
             <ImageUpload
               key={index}
@@ -461,7 +461,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     }
     if (generationMode === GenerationMode.EXTEND_VIDEO) {
       return (
-        <div className="mb-3 p-4 bg-[#2c2c2e] rounded-xl border border-gray-700 flex items-center justify-center gap-4">
+        <div className="mb-3 p-4 bg-[#272757] rounded-xl border border-[#3b3b64] flex items-center justify-center gap-4">
           <VideoUpload
             label={
               <>
@@ -526,7 +526,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
   return (
     <div className="relative w-full">
       {isSettingsOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-3 p-4 bg-[#2c2c2e] rounded-xl border border-gray-700 shadow-2xl z-20">
+        <div className="absolute bottom-full left-0 right-0 mb-3 p-4 bg-[#272757] rounded-xl border border-[#3b3b64] shadow-2xl z-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <CustomSelect
               label="Model"
@@ -573,12 +573,12 @@ const PromptForm: React.FC<PromptFormProps> = ({
       )}
       <form onSubmit={handleSubmit} className="w-full">
         {renderMediaUploads()}
-        <div className="flex items-end gap-2 bg-[#1f1f1f] border border-gray-600 rounded-2xl p-2 shadow-lg focus-within:ring-2 focus-within:ring-indigo-500">
+        <div className="flex items-end gap-2 bg-[#272757] border border-[#3b3b64] rounded-2xl p-2 shadow-lg focus-within:ring-2 focus-within:ring-[#E35336]">
           <div className="relative" ref={modeSelectorRef}>
             <button
               type="button"
               onClick={() => setIsModeSelectorOpen((prev) => !prev)}
-              className="flex shrink-0 items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-gray-700 text-gray-300 hover:text-white transition-colors"
+              className="flex shrink-0 items-center gap-2 px-3 py-2.5 rounded-lg hover:bg-[#3b3b64] text-gray-300 hover:text-white transition-colors"
               aria-label="Select generation mode">
               {modeIcons[generationMode]}
               <span className="font-medium text-sm whitespace-nowrap hidden sm:inline">
@@ -586,13 +586,13 @@ const PromptForm: React.FC<PromptFormProps> = ({
               </span>
             </button>
             {isModeSelectorOpen && (
-              <div className="absolute bottom-full mb-2 w-60 bg-[#2c2c2e] border border-gray-600 rounded-lg shadow-xl overflow-hidden z-10">
+              <div className="absolute bottom-full mb-2 w-60 bg-[#272757] border border-[#3b3b64] rounded-lg shadow-xl overflow-hidden z-10">
                 {selectableModes.map((mode) => (
                   <button
                     key={mode}
                     type="button"
                     onClick={() => handleSelectMode(mode)}
-                    className={`w-full text-left flex items-center gap-3 p-3 hover:bg-indigo-600/50 ${generationMode === mode ? 'bg-indigo-600/30 text-white' : 'text-gray-300'}`}>
+                    className={`w-full text-left flex items-center gap-3 p-3 hover:bg-[#E35336]/20 ${generationMode === mode ? 'bg-[#E35336]/30 text-white' : 'text-gray-300'}`}>
                     {modeIcons[mode]}
                     <span>{mode}</span>
                   </button>
@@ -611,14 +611,14 @@ const PromptForm: React.FC<PromptFormProps> = ({
           <button
             type="button"
             onClick={() => setIsSettingsOpen((prev) => !prev)}
-            className={`p-2.5 rounded-full hover:bg-gray-700 ${isSettingsOpen ? 'bg-gray-700 text-white' : 'text-gray-300'}`}
+            className={`p-2.5 rounded-full hover:bg-[#3b3b64] ${isSettingsOpen ? 'bg-[#3b3b64] text-white' : 'text-gray-300'}`}
             aria-label="Toggle settings">
             <SlidersHorizontalIcon className="w-5 h-5" />
           </button>
           <div className="relative group">
             <button
               type="submit"
-              className="p-2.5 bg-indigo-600 rounded-full hover:bg-indigo-500 disabled:bg-gray-600 disabled:cursor-not-allowed"
+              className="p-2.5 bg-[#E35336] rounded-full hover:bg-[#c4442b] disabled:bg-gray-600 disabled:cursor-not-allowed"
               aria-label="Generate video"
               disabled={isSubmitDisabled}>
               <ArrowRightIcon className="w-5 h-5 text-white" />
@@ -626,7 +626,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
             {isSubmitDisabled && tooltipText && (
               <div
                 role="tooltip"
-                className="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-1.5 bg-gray-900 border border-gray-700 text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                className="absolute bottom-full right-0 mb-2 w-max max-w-xs px-3 py-1.5 bg-[#1a1a3a] border border-[#3b3b64] text-white text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                 {tooltipText}
               </div>
             )}

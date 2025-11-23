@@ -38,10 +38,10 @@ const LoadingIndicator: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center p-12 bg-gray-800/50 rounded-lg border border-gray-700">
-      <div className="w-16 h-16 border-4 border-t-transparent border-indigo-500 rounded-full animate-spin"></div>
+    <div className="flex flex-col items-center justify-center p-12 bg-[#272757]/50 rounded-lg border border-[#3b3b64]">
+      <div className="w-16 h-16 border-4 border-t-transparent border-[#E35336] rounded-full animate-spin"></div>
       <h2 className="text-2xl font-semibold mt-8 text-gray-200">Generating Your Video</h2>
-      <p className="mt-2 text-gray-400 text-center transition-opacity duration-500">
+      <p className="mt-2 text-[#C2B280] text-center transition-opacity duration-500">
         {loadingMessages[messageIndex]}
       </p>
     </div>

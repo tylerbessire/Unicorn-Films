@@ -114,21 +114,21 @@ const BinSystem: React.FC<BinSystemProps> = ({
     <button
       onClick={() => setActiveTab(id)}
       className={`flex-1 py-3 px-1 md:px-2 text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors relative ${
-        activeTab === id ? 'text-indigo-400' : 'text-gray-500 hover:text-gray-300'
+        activeTab === id ? 'text-[#E35336]' : 'text-gray-400 hover:text-[#C2B280]'
       }`}
       title={label || id}
     >
       {icon}
       {activeTab === id && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />
+        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E35336]" />
       )}
     </button>
   );
 
   return (
-    <div className="flex flex-col h-full bg-[#1c1c1e] border-r border-gray-800 w-16 md:w-80 shrink-0 transition-all duration-300 z-30">
+    <div className="flex flex-col h-full bg-[#272757] border-r border-[#3b3b64] w-16 md:w-80 shrink-0 transition-all duration-300 z-30">
       {/* Tabs Navigation */}
-      <div className="flex md:grid md:grid-cols-5 border-b border-gray-800 bg-[#121212] overflow-x-auto hide-scrollbar">
+      <div className="flex md:grid md:grid-cols-5 border-b border-[#3b3b64] bg-[#1a1a3a] overflow-x-auto hide-scrollbar">
         <TabButton id="snapshots" icon={<GridIcon className="w-5 h-5" />} label="Assets" />
         <TabButton id="screenwriter" icon={<PenToolIcon className="w-5 h-5" />} label="Script" />
         <TabButton id="score" icon={<MusicIcon className="w-5 h-5" />} label="Score" />
@@ -136,11 +136,11 @@ const BinSystem: React.FC<BinSystemProps> = ({
         <TabButton id="outtakes" icon={<ScissorsIcon className="w-5 h-5" />} label="Cuts" />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-700">
+      <div className="flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-gray-600">
         {activeTab === 'snapshots' && (
           <div className="space-y-6 animate-fade-in">
-            <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hidden md:block">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            <div className="bg-[#1a1a3a]/50 p-4 rounded-xl border border-[#3b3b64] hidden md:block">
+              <h3 className="text-xs font-semibold text-[#C2B280] uppercase tracking-wider mb-3">
                 Generate Asset (Pro)
               </h3>
               <form onSubmit={handleGenerateAsset}>
@@ -148,12 +148,12 @@ const BinSystem: React.FC<BinSystemProps> = ({
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe a character or object..."
-                  className="w-full bg-black/50 border border-gray-600 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none h-20 mb-3"
+                  className="w-full bg-[#151530] border border-[#3b3b64] rounded-lg p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#E35336] resize-none h-20 mb-3"
                 />
                 <button
                   type="submit"
                   disabled={isGenerating || !prompt.trim()}
-                  className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-[#E35336] hover:bg-[#c4442b] disabled:bg-gray-600 text-white py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   {isGenerating ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -173,8 +173,8 @@ const BinSystem: React.FC<BinSystemProps> = ({
                   key={asset.id} 
                   className={`relative aspect-square group rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
                     selectedAssetIds.includes(asset.id) 
-                      ? 'border-indigo-500 ring-2 ring-indigo-500/50' 
-                      : 'border-transparent hover:border-gray-600'
+                      ? 'border-[#E35336] ring-2 ring-[#E35336]/50' 
+                      : 'border-transparent hover:border-[#C2B280]/50'
                   }`}
                   onClick={() => onSelectAsset(asset)}
                 >
@@ -191,14 +191,14 @@ const BinSystem: React.FC<BinSystemProps> = ({
                     </button>
                   </div>
                   {selectedAssetIds.includes(asset.id) && (
-                    <div className="absolute top-1 right-1 w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                    <div className="absolute top-1 right-1 w-5 h-5 bg-[#E35336] rounded-full flex items-center justify-center">
                        <PlusIcon className="w-3 h-3 text-white" />
                     </div>
                   )}
                 </div>
               ))}
               {assets.length === 0 && (
-                <div className="col-span-2 py-12 text-center text-gray-600 text-sm border-2 border-dashed border-gray-800 rounded-lg">
+                <div className="col-span-2 py-12 text-center text-[#C2B280] text-sm border-2 border-dashed border-[#3b3b64] rounded-lg opacity-50">
                   <p className="hidden md:block">No assets yet</p>
                 </div>
               )}
@@ -208,20 +208,20 @@ const BinSystem: React.FC<BinSystemProps> = ({
 
         {activeTab === 'screenwriter' && (
           <div className="space-y-6 animate-fade-in">
-             <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 hidden md:block">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+             <div className="bg-[#1a1a3a]/50 p-4 rounded-xl border border-[#3b3b64] hidden md:block">
+              <h3 className="text-xs font-semibold text-[#C2B280] uppercase tracking-wider mb-3">
                 Gemini 3 Script Writer
               </h3>
               <textarea
                 value={scriptInput}
                 onChange={(e) => setScriptInput(e.target.value)}
                 placeholder="Describe your scene idea..."
-                className="w-full bg-black/50 border border-gray-600 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none h-32 mb-3"
+                className="w-full bg-[#151530] border border-[#3b3b64] rounded-lg p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#E35336] resize-none h-32 mb-3"
               />
               <button
                 onClick={handleGenerateScript}
                 disabled={isGenerating || !scriptInput.trim()}
-                className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                className="w-full flex items-center justify-center gap-2 bg-[#E35336] hover:bg-[#c4442b] disabled:bg-gray-600 text-white py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 {isGenerating ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -235,7 +235,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
             </div>
             
             {scriptOutput ? (
-              <div className="bg-[#2c2c2e] p-4 rounded-xl border border-gray-700 animate-fade-in">
+              <div className="bg-[#1a1a3a] p-4 rounded-xl border border-[#3b3b64] animate-fade-in">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="text-xs font-semibold text-gray-400 uppercase">Suggested Prompt</h4>
                 </div>
@@ -244,14 +244,14 @@ const BinSystem: React.FC<BinSystemProps> = ({
                 </p>
                 <button
                   onClick={() => onUseScript(scriptOutput)}
-                  className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-xs font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-[#3b3b64] hover:bg-[#4b4b74] text-white py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   <ArrowRightIcon className="w-3 h-3" />
                   Use in Prompt
                 </button>
               </div>
             ) : (
-                <div className="text-center text-gray-500 text-sm py-8">
+                <div className="text-center text-[#C2B280] opacity-50 text-sm py-8">
                     Generate a script to see it here.
                 </div>
             )}
@@ -260,21 +260,21 @@ const BinSystem: React.FC<BinSystemProps> = ({
 
         {activeTab === 'score' && (
            <div className="space-y-6 animate-fade-in">
-              <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                   <MusicIcon className="w-3 h-3 text-purple-400" />
+              <div className="bg-[#1a1a3a]/50 p-4 rounded-xl border border-[#3b3b64]">
+                <h3 className="text-xs font-semibold text-[#98A869] uppercase tracking-wider mb-3 flex items-center gap-2">
+                   <MusicIcon className="w-3 h-3 text-[#98A869]" />
                    Lyria Score (Gen 3)
                 </h3>
                 <textarea
                   value={musicPrompt}
                   onChange={(e) => setMusicPrompt(e.target.value)}
                   placeholder="Describe mood, instruments, tempo..."
-                  className="w-full bg-black/50 border border-gray-600 rounded-lg p-3 text-sm text-gray-200 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none h-24 mb-3"
+                  className="w-full bg-[#151530] border border-[#3b3b64] rounded-lg p-3 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#98A869] resize-none h-24 mb-3"
                 />
                  <button
                   onClick={handleGenerateScore}
                   disabled={isGenerating || !musicPrompt.trim()}
-                  className="w-full flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-2 bg-[#98A869] hover:bg-[#7a8a58] disabled:bg-gray-600 text-white py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   {isGenerating ? (
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -289,17 +289,17 @@ const BinSystem: React.FC<BinSystemProps> = ({
 
               <div className="space-y-2">
                   {scores.length === 0 && (
-                      <div className="text-center text-gray-600 text-xs py-4">
+                      <div className="text-center text-[#C2B280] opacity-50 text-xs py-4">
                           No scores generated yet.
                       </div>
                   )}
                   {scores.map((score, i) => (
-                      <div key={i} className="p-3 bg-[#2c2c2e] rounded-lg border border-gray-700 flex items-center gap-3">
-                          <div className="w-8 h-8 bg-purple-900/50 rounded flex items-center justify-center shrink-0">
-                              <MusicIcon className="w-4 h-4 text-purple-400" />
+                      <div key={i} className="p-3 bg-[#1a1a3a] rounded-lg border border-[#3b3b64] flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#98A869]/20 rounded flex items-center justify-center shrink-0">
+                              <MusicIcon className="w-4 h-4 text-[#98A869]" />
                           </div>
                           <div className="flex-1 min-w-0">
-                              <div className="text-xs font-medium text-gray-300 truncate">{score.title}</div>
+                              <div className="text-xs font-medium text-gray-200 truncate">{score.title}</div>
                               <div className="text-[10px] text-gray-500">{score.bpm} BPM • {score.instruments?.slice(0, 2).join(', ')}</div>
                           </div>
                           <button 
@@ -317,11 +317,11 @@ const BinSystem: React.FC<BinSystemProps> = ({
 
         {activeTab === 'b-roll' && (
           <div className="animate-fade-in space-y-4">
-            <div className="p-6 bg-gray-800/30 rounded-xl border border-gray-700 border-dashed text-center">
+            <div className="p-6 bg-[#1a1a3a] rounded-xl border border-[#3b3b64] border-dashed text-center">
               <FilmIcon className="w-8 h-8 text-gray-600 mx-auto mb-3" />
               <h3 className="text-gray-400 text-sm font-medium">Smart B-Roll</h3>
               {scenes.length > 0 ? (
-                 <p className="text-xs text-indigo-400 mt-2">
+                 <p className="text-xs text-[#E35336] mt-2">
                     Analyze last scene to generate bridges
                  </p>
               ) : (
@@ -333,7 +333,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
             <button 
                 disabled={scenes.length === 0 || isGenerating}
                 onClick={handleGenerateBRoll}
-                className="w-full py-3 px-4 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 bg-[#3b3b64] hover:bg-[#4b4b74] disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
             >
                {isGenerating ? <div className="animate-spin w-3 h-3 border-2 border-white rounded-full border-t-transparent"/> : <SparklesIcon className="w-3 h-3" />}
                Generate Transitions
@@ -342,13 +342,13 @@ const BinSystem: React.FC<BinSystemProps> = ({
             {bRollIdeas.length > 0 && (
                 <div className="space-y-2 mt-4">
                     {bRollIdeas.map((idea, i) => (
-                        <div key={i} className="bg-[#2c2c2e] p-3 rounded-lg border border-gray-700 flex gap-2">
-                            <span className="text-xs text-gray-500 font-mono mt-0.5">{i+1}</span>
+                        <div key={i} className="bg-[#1a1a3a] p-3 rounded-lg border border-[#3b3b64] flex gap-2">
+                            <span className="text-xs text-[#C2B280] font-mono mt-0.5">{i+1}</span>
                             <div className="flex-1">
                                 <p className="text-xs text-gray-300">{idea}</p>
                                 <button 
                                     onClick={() => onUseScript(idea)}
-                                    className="text-[10px] text-indigo-400 hover:text-indigo-300 mt-2 font-medium"
+                                    className="text-[10px] text-[#E35336] hover:text-[#c4442b] mt-2 font-medium"
                                 >
                                     USE THIS
                                 </button>
@@ -366,7 +366,7 @@ const BinSystem: React.FC<BinSystemProps> = ({
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Drafts & Alts</h3>
                     <span className="text-[10px] text-gray-600">0 Items</span>
                  </div>
-                 <div className="text-center text-gray-600 text-xs py-10">
+                 <div className="text-center text-[#C2B280] opacity-50 text-xs py-10">
                     No deleted scenes.
                  </div>
             </div>

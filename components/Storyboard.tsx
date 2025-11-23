@@ -97,21 +97,21 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
     return (
         <div className="flex h-full w-full">
             {/* Board Canvas */}
-            <div className="flex-1 relative bg-[#0f0f11] overflow-hidden" ref={boardRef} onDragOver={handleDragOver} onDrop={handleDrop}>
+            <div className="flex-1 relative bg-[#151530] overflow-hidden" ref={boardRef} onDragOver={handleDragOver} onDrop={handleDrop}>
                 {/* Grid Background */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none" 
                      style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
                 </div>
                 
-                <div className="absolute top-4 left-4 z-10 bg-black/50 p-2 rounded-lg border border-gray-700/50 backdrop-blur-md">
-                    <h2 className="text-gray-400 font-mono text-xs uppercase tracking-widest">Storybuilder Board (Gemini 3 Powered)</h2>
+                <div className="absolute top-4 left-4 z-10 bg-[#272757]/80 p-2 rounded-lg border border-[#3b3b64] backdrop-blur-md">
+                    <h2 className="text-[#C2B280] font-mono text-xs uppercase tracking-widest">Storybuilder Board (Gemini 3 Powered)</h2>
                 </div>
 
                 <div className="absolute top-4 right-4 z-10">
                      <button 
                         onClick={handleExecute}
                         disabled={items.length === 0 || isExecuting}
-                        className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-mono flex items-center gap-2 shadow-lg"
+                        className="bg-[#E35336] hover:bg-[#c4442b] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-mono flex items-center gap-2 shadow-lg"
                     >
                         {isExecuting ? "INTERPRETING..." : "EXECUTE SCENE"} <ArrowRightIcon className="w-4 h-4" />
                     </button>
@@ -137,7 +137,7 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
                             <input 
                                 value={item.note}
                                 onChange={(e) => updateNote(item.id, e.target.value)}
-                                className="w-full mt-2 bg-transparent text-center font-handwriting text-yellow-300 text-lg focus:outline-none"
+                                className="w-full mt-2 bg-transparent text-center font-handwriting text-[#C2B280] text-lg focus:outline-none"
                             />
                             {/* Connection Lines (Visual Mock) */}
                              <div className="absolute top-1/2 -right-full w-full h-px border-t-2 border-dashed border-white/20 pointer-events-none"></div>
@@ -147,7 +147,7 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
 
                 {items.length === 0 && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="text-gray-700 font-mono text-sm">
+                        <div className="text-gray-500 font-mono text-sm">
                             DRAG ASSETS FROM THE DRAWER TO BUILD SCENE
                         </div>
                     </div>
@@ -155,14 +155,14 @@ const Storyboard: React.FC<StoryboardProps> = ({ assets, onInjectToTimeline }) =
             </div>
 
             {/* Mini Drawer for Storyboard */}
-            <div className="w-20 bg-[#161617] border-l border-gray-800 flex flex-col items-center py-4 gap-4 overflow-y-auto z-20">
-                 <div className="text-[10px] text-gray-500 font-mono rotate-90 whitespace-nowrap mb-4">ASSETS</div>
+            <div className="w-20 bg-[#272757] border-l border-[#3b3b64] flex flex-col items-center py-4 gap-4 overflow-y-auto z-20">
+                 <div className="text-[10px] text-[#C2B280] font-mono rotate-90 whitespace-nowrap mb-4">ASSETS</div>
                  {assets.map(asset => (
-                     <div key={asset.id} onClick={() => addItem(asset.id)} className="w-12 h-12 rounded border border-gray-700 cursor-pointer hover:border-indigo-500 overflow-hidden shrink-0">
+                     <div key={asset.id} onClick={() => addItem(asset.id)} className="w-12 h-12 rounded border border-[#3b3b64] cursor-pointer hover:border-[#E35336] overflow-hidden shrink-0">
                          <img src={asset.imageUrl} className="w-full h-full object-cover" />
                      </div>
                  ))}
-                 <button className="w-12 h-12 rounded border border-dashed border-gray-700 flex items-center justify-center text-gray-600 hover:text-gray-400">
+                 <button className="w-12 h-12 rounded border border-dashed border-[#3b3b64] flex items-center justify-center text-gray-500 hover:text-[#C2B280]">
                      <PlusIcon className="w-5 h-5" />
                  </button>
             </div>
