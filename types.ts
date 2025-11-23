@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -60,19 +59,10 @@ export interface Asset {
   imageBlob: Blob;
   prompt: string;
   type: 'character' | 'environment' | 'object';
+  name?: string; // e.g., "Detective John"
 }
 
-export interface GenerateVideoParams {
-  prompt: string;
-  model: VeoModel;
-  aspectRatio: AspectRatio;
-  resolution: Resolution;
-  mode: GenerationMode;
-  startFrame?: ImageFile | null;
-  endFrame?: ImageFile | null;
-  referenceImages?: ImageFile[];
-  styleImage?: ImageFile | null;
-  inputVideo?: VideoFile | null;
-  inputVideoObject?: Video | null;
-  isLooping?: boolean;
-}
+export interface FilmStyle {
+  id: string;
+  name: string;
+  
