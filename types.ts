@@ -43,6 +43,20 @@ export interface VideoFile {
   base64: string;
 }
 
+export interface GenerateVideoParams {
+  prompt: string;
+  model: VeoModel;
+  aspectRatio: AspectRatio;
+  resolution: Resolution;
+  mode: GenerationMode;
+  startFrame: ImageFile | null;
+  endFrame: ImageFile | null;
+  referenceImages: ImageFile[];
+  inputVideo: VideoFile | null;
+  inputVideoObject: Video | null;
+  isLooping: boolean;
+}
+
 export interface Scene {
   id: string;
   videoUrl: string;
@@ -51,6 +65,7 @@ export interface Scene {
   prompt: string;
   timestamp: number;
   duration?: number;
+  mood?: string; // For Narrative Arc
 }
 
 export interface Asset {
@@ -65,4 +80,19 @@ export interface Asset {
 export interface FilmStyle {
   id: string;
   name: string;
-  
+  promptInjection: string;
+  description: string;
+  category: 'Hollywood' | 'Custom';
+}
+
+export interface ContinuityProfile {
+    activeAssetIds: string[]; // Characters/Environments currently "Locked"
+    lightingLock: string | null; // e.g., "Golden Hour", "Cyberpunk Neon"
+}
+
+export interface StoryBucket {
+    id: string;
+    name: string;
+    scenes: Scene[];
+    storyMemory: string; // The "current plot state" text
+}

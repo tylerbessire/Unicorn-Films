@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React from 'react';
+import React, { useState } from 'react';
 import { Scene } from '../types';
 import { ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon, ScissorsIcon, TrashIcon } from './icons';
 
@@ -27,101 +27,85 @@ const Timeline: React.FC<TimelineProps> = ({
   isCollapsed,
   onToggleCollapse
 }) => {
+  const [hoveredTransitionIndex, setHoveredTransitionIndex] = useState<number | null>(null);
+
   return (
-    <div className={`bg-[#1a1a3a] border-t border-[#3b3b64] flex flex-col shrink-0 transition-all duration-300 ease-in-out ${isCollapsed ? 'h-10' : 'h-64'}`}>
+    <div className={`bg-[#1e2922] border-t border-white/10 flex flex-col shrink-0 transition-all duration-300 ${isCollapsed ? 'h-10' : 'h-64'} z-30`}>
       <div 
-        className="h-10 bg-[#272757] border-b border-[#3b3b64] flex items-center px-4 justify-between cursor-pointer hover:bg-[#3b3b64]"
+        className="h-10 bg-[#2F3E32] border-b border-white/10 flex items-center px-4 justify-between cursor-pointer hover:bg-white/5"
         onClick={onToggleCollapse}
       >
         <div className="flex items-center gap-4">
-            <span className="text-xs font-bold text-[#C2B280] uppercase tracking-widest">Story Timeline</span>
-            <div className="h-4 w-px bg-gray-600"></div>
-            <span className="text-xs text-gray-400">{scenes.length} Scenes</span>
+            <span className="text-xs font-bold text-[#D4A373] uppercase tracking-widest">Story Timeline</span>
+            <div className="h-4 w-px bg-white/20"></div>
+            <span className="text-xs text-white/50">{scenes.length} Scenes</span>
         </div>
-        
         <div className="flex items-center gap-4">
            {!isCollapsed && (
              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddScene();
-                }}
-                className="text-xs flex items-center gap-1 text-[#E35336] hover:text-[#c4442b] transition-colors font-medium mr-2"
+                onClick={(e) => { e.stopPropagation(); onAddScene(); }}
+                className="text-xs flex items-center gap-1 text-[#E07A5F] hover:text-white transition-colors font-medium mr-2"
               >
-                <PlusIcon className="w-3 h-3" />
-                New Sequence
+                <PlusIcon className="w-3 h-3" /> New Sequence
               </button>
            )}
-           {isCollapsed ? <ChevronUpIcon className="w-4 h-4 text-gray-400" /> : <ChevronDownIcon className="w-4 h-4 text-gray-400" />}
+           {isCollapsed ? <ChevronUpIcon className="w-4 h-4 text-white/50" /> : <ChevronDownIcon className="w-4 h-4 text-white/50" />}
         </div>
       </div>
       
       {!isCollapsed && (
-        <div className="flex-1 overflow-x-auto p-4 flex gap-2 items-center animate-fade-in scrollbar-thin scrollbar-thumb-gray-600">
+        <div className="flex-1 overflow-x-auto p-4 flex items-center animate-fade-in scrollbar-thin">
           {scenes.length === 0 ? (
-             <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 border-2 border-dashed border-[#3b3b64] rounded-xl">
+             <div className="w-full flex flex-col items-center justify-center text-white/30 border-2 border-dashed border-white/10 rounded-xl h-40 m-4">
                <p className="text-sm">Timeline Empty</p>
                <p className="text-xs mt-1">Generate a video to start your story</p>
              </div>
           ) : (
-            scenes.map((scene, index) => {
-              const isSelected = selectedSceneId === scene.id;
-              return (
-                <div 
-                  key={scene.id}
-                  onClick={() => onSelectScene(scene.id)}
-                  className={`relative group shrink-0 w-64 h-36 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                    isSelected ? 'border-[#E35336] ring-2 ring-[#E35336]/30' : 'border-[#3b3b64] hover:border-[#C2B280]/50'
-                  }`}
-                >
-                  <video 
-                    src={scene.videoUrl} 
-                    className="w-full h-full object-cover pointer-events-none"
-                    preload="metadata"
-                  />
-                  
-                  {/* Scene Number Badge */}
-                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 rounded text-[10px] font-mono text-[#C2B280]">
-                    SCENE {index + 1}
-                  </div>
+            <div className="flex items-center">
+              {scenes.map((scene, index) => {
+                const isSelected = selectedSceneId === scene.id;
+                return (
+                  <React.Fragment key={scene.id}>
+                    {/* Scene Card */}
+                    <div 
+                      onClick={() => onSelectScene(scene.id)}
+                      className={`relative group shrink-0 w-64 h-36 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                        isSelected ? 'border-[#D4A373] shadow-[0_0_15px_rgba(212,163,115,0.3)]' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <video src={scene.videoUrl} className="w-full h-full object-cover pointer-events-none" />
+                      <div className="absolute top-2 left-2 px-2 py-0.5 bg-black/70 rounded text-[10px] font-mono text-[#D4A373]">
+                        SCENE {index + 1}
+                      </div>
+                      <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <button onClick={(e) => {e.stopPropagation(); onSelectScene(scene.id)}} className="p-2 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm"><PlayIcon className="w-4 h-4 text-white" /></button>
+                          <button onClick={(e) => {e.stopPropagation(); onExtendScene(scene)}} className="p-2 bg-[#E07A5F]/80 hover:bg-[#E07A5F] rounded-full backdrop-blur-sm"><ScissorsIcon className="w-4 h-4 text-white" /></button>
+                          <button onClick={(e) => {e.stopPropagation(); onDeleteScene(scene.id)}} className="p-2 bg-red-600/80 hover:bg-red-600 rounded-full backdrop-blur-sm"><TrashIcon className="w-4 h-4 text-white" /></button>
+                      </div>
+                    </div>
 
-                  {/* Controls overlay */}
-                  <div className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectScene(scene.id);
-                        }}
-                         className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-sm"
-                         title="Play"
-                      >
-                        <PlayIcon className="w-4 h-4 fill-white" />
-                      </button>
-                      {/* Extend Button - The core chaining feature */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onExtendScene(scene);
-                        }}
-                        className="p-2 bg-[#E35336]/80 hover:bg-[#E35336] rounded-full text-white backdrop-blur-sm"
-                        title="Extend this clip"
-                      >
-                        <ScissorsIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDeleteScene(scene.id);
-                        }}
-                        className="p-2 bg-red-600/80 hover:bg-red-600 rounded-full text-white backdrop-blur-sm"
-                        title="Delete"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                  </div>
-                </div>
-              );
-            })
+                    {/* Transition Bubble */}
+                    {index < scenes.length - 1 && (
+                        <div className="w-12 h-px bg-white/10 relative flex justify-center shrink-0">
+                             <button
+                                onMouseEnter={() => setHoveredTransitionIndex(index)}
+                                onMouseLeave={() => setHoveredTransitionIndex(null)}
+                                className="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-[#2F3E32] border border-white/20 hover:border-[#D4A373] hover:scale-110 transition-all flex items-center justify-center z-10"
+                                title="Add Transition"
+                             >
+                                 <PlusIcon className="w-3 h-3 text-white/50" />
+                             </button>
+                             {hoveredTransitionIndex === index && (
+                                 <div className="absolute bottom-full mb-2 bg-black/80 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap">
+                                     Bridge Scene
+                                 </div>
+                             )}
+                        </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
           )}
         </div>
       )}

@@ -17,6 +17,8 @@ import {
   AppState,
   Asset,
   AspectRatio,
+  ContinuityProfile,
+  FilmStyle,
   GenerateVideoParams,
   GenerationMode,
   ImageFile,
@@ -26,7 +28,6 @@ import {
   VideoFile,
 } from './types';
 
-// Robust ID generator
 const generateId = () => globalThis.crypto?.randomUUID() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2));
 
 const App: React.FC = () => {
@@ -44,14 +45,18 @@ const App: React.FC = () => {
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
   const [externalPrompt, setExternalPrompt] = useState<string | null>(null);
-  
   const [initialFormValues, setInitialFormValues] = useState<GenerateVideoParams | null>(null);
 
-  // Derived State helpers
+  // --- NEW FEATURES STATE ---
+  const [storyMemory, setStoryMemory] = useState<string>('');
+  const [selectedStyle, setSelectedStyle] = useState<FilmStyle | null>(null);
+  const [continuity, setContinuity] = useState<ContinuityProfile>({ activeAssetIds: [], lightingLock: null });
+  const [customStyles, setCustomStyles] = useState<FilmStyle[]>([]);
+
+  // Helpers
   const selectedScene = scenes.find(s => s.id === selectedSceneId);
   const selectedAssets = assets.filter(a => selectedAssetIds.includes(a.id));
 
-  // We need to fetch the base64 for assets if we want to pass them to PromptForm properly
   const getAssetAsImageFile = async (asset: Asset): Promise<ImageFile> => {
      return new Promise((resolve) => {
         const reader = new FileReader();
@@ -80,7 +85,6 @@ const App: React.FC = () => {
   }, [selectedAssetIds, assets]);
 
 
-  // Check for API key on initial load
   useEffect(() => {
     const checkApiKey = async () => {
       if (window.aistudio) {
@@ -89,10 +93,6 @@ const App: React.FC = () => {
             setShowApiKeyDialog(true);
           }
         } catch (error) {
-          console.warn(
-            'aistudio.hasSelectedApiKey check failed, assuming no key selected.',
-            error,
-          );
           setShowApiKeyDialog(true);
         }
       }
@@ -108,16 +108,15 @@ const App: React.FC = () => {
           return;
         }
       } catch (error) {
-        console.warn('Key check failed', error);
         setShowApiKeyDialog(true);
         return;
       }
     }
 
     setAppState(AppState.LOADING);
-    setExternalPrompt(null); // Clear external prompt after usage
-    setInitialFormValues(null); // Clear carry-over configs
-    setIsPromptBarCollapsed(true); // Auto collapse to show result
+    setExternalPrompt(null);
+    setInitialFormValues(null);
+    setIsPromptBarCollapsed(true);
 
     try {
       const {objectUrl, blob, video} = await generateVideo(params);
@@ -134,8 +133,6 @@ const App: React.FC = () => {
       setScenes(prev => [...prev, newScene]);
       setSelectedSceneId(newScene.id);
       setAppState(AppState.SUCCESS);
-      
-      // Clear selections after successful generation
       setSelectedAssetIds([]);
 
     } catch (error) {
@@ -150,7 +147,6 @@ const App: React.FC = () => {
       const file = new File([scene.videoBlob], 'scene_to_extend.mp4', {
         type: scene.videoBlob.type,
       });
-      // We need base64 for the form logic
        const reader = new FileReader();
        reader.onloadend = () => {
          const base64 = (reader.result as string).split(',')[1];
@@ -158,14 +154,14 @@ const App: React.FC = () => {
          
          setInitialFormValues({
             prompt: '',
-            model: VeoModel.VEO, // Extension requires standard veo
-            aspectRatio: AspectRatio.LANDSCAPE, // Use a valid default aspect ratio
+            model: VeoModel.VEO,
+            aspectRatio: AspectRatio.LANDSCAPE,
             resolution: Resolution.P720,
             mode: GenerationMode.EXTEND_VIDEO,
             inputVideo: videoFile,
             inputVideoObject: scene.videoObject
          });
-         setIsPromptBarCollapsed(false); // Open prompt bar to show extended settings
+         setIsPromptBarCollapsed(false);
        };
        reader.readAsDataURL(scene.videoBlob);
 
@@ -181,28 +177,11 @@ const App: React.FC = () => {
     }
   };
 
-  const toggleAssetSelection = (asset: Asset) => {
-    setSelectedAssetIds(prev => 
-      prev.includes(asset.id) 
-        ? prev.filter(id => id !== asset.id)
-        : [...prev, asset.id]
-    );
-  };
-
-  const handleStoryboardInject = (data: any) => {
-      setExternalPrompt(data.prompt);
-      setActiveView('studio');
-      setIsPromptBarCollapsed(false);
-  };
-
-  // Handler for actions coming from the Director Assistant AI
   const handleDirectorAction = async (action: DirectorAction) => {
       switch(action.type) {
           case 'GENERATE_ASSET':
               try {
                   const { prompt } = action.payload;
-                  // Trigger asset generation in background or foreground
-                  // We'll do it "live" for the user to see the result in the bin
                   const { imageUrl, blob } = await generateImage(prompt);
                   const newAsset: Asset = {
                       id: generateId(),
@@ -212,9 +191,7 @@ const App: React.FC = () => {
                       type: 'character'
                   };
                   setAssets(prev => [newAsset, ...prev]);
-              } catch (e) {
-                  console.error("Director failed to generate asset", e);
-              }
+              } catch (e) { console.error(e); }
               break;
           case 'UPDATE_PROMPT':
               setExternalPrompt(action.payload.prompt);
@@ -228,64 +205,59 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen bg-[#151530] text-gray-200 flex flex-col font-sans overflow-hidden">
+    <div className="h-screen text-gray-200 flex flex-col font-sans overflow-hidden">
       {showApiKeyDialog && (
         <ApiKeyDialog onContinue={handleApiKeyDialogContinue} />
       )}
 
       <DirectorAssistant onAction={handleDirectorAction} />
       
-      {/* Header */}
-      <header className="h-16 border-b border-[#3b3b64] flex items-center px-6 bg-[#272757] shrink-0 z-40 relative">
+      {/* Soft Sage Header */}
+      <header className="h-16 border-b border-white/10 flex items-center px-6 bg-[#2F3E32]/90 backdrop-blur-md shrink-0 z-40 relative shadow-lg">
         <h1 className="text-xl font-bold tracking-wide text-white mr-8 flex items-center gap-2">
-          <span className="w-4 h-4 rounded-full bg-[#E35336]"></span>
-          Desert Mirage
+          <span className="w-5 h-5 rounded-full bg-[#E07A5F] shadow-[0_0_10px_#E07A5F]"></span>
+          <span className="text-[#D4A373]">Unicorn</span>-Films
         </h1>
         
-        {/* View Switcher */}
-        <div className="flex bg-[#1b1b3a] rounded-lg p-1 border border-[#3b3b64]">
+        <div className="flex bg-black/20 rounded-full p-1 border border-white/10">
              <button 
                 onClick={() => setActiveView('studio')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'studio' ? 'bg-[#E35336] text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${activeView === 'studio' ? 'bg-[#D4A373] text-[#2F3E32] shadow-sm' : 'text-gray-400 hover:text-white'}`}
              >
                 <TvIcon className="w-3 h-3" /> Studio
              </button>
              <button 
                 onClick={() => setActiveView('storyboard')}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors ${activeView === 'storyboard' ? 'bg-[#E35336] text-white' : 'text-gray-400 hover:text-white'}`}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all ${activeView === 'storyboard' ? 'bg-[#D4A373] text-[#2F3E32] shadow-sm' : 'text-gray-400 hover:text-white'}`}
              >
                 <PresentationIcon className="w-3 h-3" /> Storyboard
              </button>
         </div>
-
-        <div className="ml-auto text-xs text-[#C2B280] hidden md:block opacity-80">
-           AI Film Production Platform
-        </div>
       </header>
 
-      {/* Main Workspace */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* Left Sidebar: Bins */}
+        {/* Bin System / Story Bucket */}
         <BinSystem 
            assets={assets}
            scenes={scenes}
            onAddAsset={(a) => setAssets(prev => [a, ...prev])}
            onRemoveAsset={(id) => setAssets(prev => prev.filter(a => a.id !== id))}
            selectedAssetIds={selectedAssetIds}
-           onSelectAsset={toggleAssetSelection}
+           onSelectAsset={(asset) => setSelectedAssetIds(prev => prev.includes(asset.id) ? prev.filter(id => id !== asset.id) : [...prev, asset.id])}
            onUseScript={(script) => {
                setExternalPrompt(script);
                setIsPromptBarCollapsed(false);
            }}
+           storyMemory={storyMemory}
+           onUpdateStoryMemory={setStoryMemory}
         />
 
         {/* Center Stage */}
-        <div className="flex-1 flex flex-col bg-[#151530] relative overflow-hidden">
+        <div className="flex-1 flex flex-col relative overflow-hidden bg-gradient-to-br from-[#2F3E32] to-[#1e2922]">
           
           {activeView === 'studio' ? (
               <>
-                {/* Viewport / Player */}
                 <div className={`flex-1 flex items-center justify-center p-4 md:p-8 overflow-hidden relative transition-all duration-300 ${isPromptBarCollapsed ? 'pb-24' : 'pb-4'}`}>
                     {appState === AppState.LOADING ? (
                         <LoadingIndicator />
@@ -295,30 +267,28 @@ const App: React.FC = () => {
                                 src={selectedScene.videoUrl} 
                                 controls 
                                 autoPlay 
-                                className="max-w-full max-h-full shadow-2xl rounded-lg border border-[#3b3b64]"
+                                className="max-w-full max-h-full shadow-2xl rounded-xl border border-white/10"
                             />
-                            <div className="mt-4 text-sm text-[#C2B280] font-mono max-w-2xl text-center truncate px-4">
+                            <div className="mt-4 text-sm text-[#D4A373] font-mono max-w-2xl text-center truncate px-4 glass-panel p-2 rounded-lg">
                                 {selectedScene.prompt}
                             </div>
                         </div>
                     ) : (
-                        <div className="text-center text-gray-500">
-                            <h2 className="text-2xl font-light mb-2 text-[#C2B280]">Ready to Direct</h2>
-                            <p>Select assets from the bin or type a prompt below.</p>
+                        <div className="text-center text-white/40">
+                            <h2 className="text-3xl font-light mb-2 text-[#D4A373] tracking-widest">DESERT MIRAGE</h2>
+                            <p>Select a style and start your story.</p>
                         </div>
                     )}
                 </div>
 
-                {/* Floating Prompt Bar Container */}
-                <div className={`w-full max-w-4xl mx-auto px-6 relative z-10 transition-all duration-300 ${isPromptBarCollapsed ? 'translate-y-full absolute bottom-0 left-0 right-0' : 'pb-6'}`}>
-                    {/* Handle for collapsing */}
+                <div className={`w-full max-w-5xl mx-auto px-6 relative z-20 transition-all duration-300 ${isPromptBarCollapsed ? 'translate-y-full absolute bottom-0 left-0 right-0' : 'pb-6'}`}>
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2">
                         <button 
                             onClick={() => setIsPromptBarCollapsed(!isPromptBarCollapsed)}
-                            className="bg-[#272757] border border-[#3b3b64] border-b-0 rounded-t-lg px-4 py-1 flex items-center gap-2 text-xs text-[#C2B280] hover:text-white"
+                            className="bg-[#2F3E32] border border-white/10 border-b-0 rounded-t-xl px-4 py-1 flex items-center gap-2 text-[10px] uppercase font-bold text-[#D4A373] hover:bg-[#3e5244] shadow-lg"
                         >
                             {isPromptBarCollapsed ? (
-                                <>Show Prompt Bar <ChevronUpIcon className="w-3 h-3" /></>
+                                <>Open Director <ChevronUpIcon className="w-3 h-3" /></>
                             ) : (
                                 <>Hide <ChevronDownIcon className="w-3 h-3" /></>
                             )}
@@ -331,11 +301,19 @@ const App: React.FC = () => {
                             initialValues={initialFormValues}
                             externalPrompt={externalPrompt}
                             externalReferences={preparedExternalAssets}
+                            
+                            // New Props
+                            assets={assets}
+                            selectedStyle={selectedStyle}
+                            onSelectStyle={setSelectedStyle}
+                            continuity={continuity}
+                            onSetContinuity={setContinuity}
+                            customStyles={customStyles}
+                            onAddCustomStyle={s => setCustomStyles([...customStyles, s])}
                         />
                     )}
                 </div>
 
-                {/* Timeline */}
                 <Timeline 
                     scenes={scenes}
                     selectedSceneId={selectedSceneId}
@@ -358,7 +336,11 @@ const App: React.FC = () => {
           ) : (
               <Storyboard 
                  assets={assets}
-                 onInjectToTimeline={handleStoryboardInject}
+                 onInjectToTimeline={(data) => {
+                     setExternalPrompt(data.prompt);
+                     setActiveView('studio');
+                     setIsPromptBarCollapsed(false);
+                 }}
               />
           )}
         </div>
